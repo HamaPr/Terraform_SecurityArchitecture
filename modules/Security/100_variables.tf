@@ -1,4 +1,4 @@
-﻿variable "rgname" {
+variable "rgname" {
   type = string
 }
 variable "loca" {
@@ -78,4 +78,9 @@ variable "admin_phone" {
 variable "domain_name" {
   type        = string
   description = "Domain name for the project"
+}
+
+variable "sentinel_service_principal_id" {
+  description = "The Object ID of the Azure Security Insights service principal"
+  type        = string
 }
