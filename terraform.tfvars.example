@@ -7,3 +7,35 @@ admin_emails = [
   "admin1@example.com",
   "admin2@example.com"
 ]
+
+azure_ad_tenant_domain = "yourtenant.onmicrosoft.com"
+
+sentinel_service_principal_id = "00000000-0000-0000-0000-000000000000"
+
+rbac_users = {
+  "pm" = {
+    account_name = "student_pm"
+    role         = "PM"
+    azure_role   = "Owner"
+  }
+  "reviewer" = {
+    account_name = "student_reviewer"
+    role         = "아키텍처검증"
+    azure_role   = "Reader"
+  }
+  "security_ext" = {
+    account_name = "student_security_ext"
+    role         = "외부 보안"
+    azure_role   = "Security Reader"
+  }
+  "security1" = {
+    account_name = "student_security1"
+    role         = "내부 보안"
+    azure_role   = "Security Reader"
+  }
+  "security2" = {
+    account_name = "student_security2"
+    role         = "내부 보안"
+    azure_role   = "Security Reader"
+  }
+}
