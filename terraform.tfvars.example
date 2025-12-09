@@ -18,24 +18,29 @@ rbac_users = {
     role         = "PM"
     azure_role   = "Owner"
   }
-  "reviewer" = {
+  "arch_reviewer" = {
     account_name = "student_reviewer"
-    role         = "아키텍처검증"
+    role         = "Architect"
     azure_role   = "Reader"
   }
-  "security_ext" = {
-    account_name = "student_security_ext"
-    role         = "외부 보안"
-    azure_role   = "Security Reader"
+  "sec_external" = {
+    account_name = "student_security_ext1"
+    role         = "External Security"
+    azure_role   = "Microsoft Sentinel Contributor"
   }
-  "security1" = {
+  "sec_internal1" = {
     account_name = "student_security1"
-    role         = "내부 보안"
-    azure_role   = "Security Reader"
+    role         = "Internal Security"
+    azure_role   = "Security Admin"
   }
-  "security2" = {
+  "sec_internal2" = {
     account_name = "student_security2"
-    role         = "내부 보안"
-    azure_role   = "Security Reader"
+    role         = "Internal Security"
+    azure_role   = "Log Analytics Reader"
+  }
+  "sec_external2" = {
+    account_name = "student_security_ext2"
+    role         = "External Security"
+    azure_role   = "Microsoft Sentinel Contributor"
   }
 }
