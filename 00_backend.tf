@@ -9,4 +9,3 @@
 #     use_azuread_auth     = true
 #   }
 # }
-
