@@ -3,7 +3,8 @@ module "hub" {
   rgname            = azurerm_resource_group.rg.name
   loca              = "Korea Central"
   hub_address_space = "10.1.0.0/16"
-  enable_vpn        = false
+  enable_vpn                  = false
+  log_analytics_workspace_id  = module.security.log_analytics_workspace_id
 }
 resource "azurerm_virtual_network_peering" "hub_to_spoke" {
   name                      = "hub-to-spoke"
@@ -22,14 +23,13 @@ module "network_central" {
   vnet_name     = "vnet0"
   address_space = ["10.0.0.0/16", "172.16.0.0/16", "192.168.0.0/16"]
   subnets = {
-    "www-nat"   = "10.0.1.0/24"
     "www-db"    = "172.16.1.0/24"
     "www-stor"  = "172.16.2.0/24"
-    "www-vmss"  = "192.168.1.0/24"
-    "www-web"   = "192.168.2.0/24"
+    "www-web"   = "192.168.1.0/24"
+    "www-acr"   = "192.168.2.0/24"
     "www-appgw" = "192.168.3.0/24"
-    "www-load"  = "192.168.4.0/24"
     "www-was"   = "192.168.5.0/24"
+    "www-mail"  = "192.168.6.0/24"
   }
   enable_appgw                = true
   enable_nat                  = true
@@ -45,14 +45,17 @@ module "network_central" {
   log_analytics_workspace_id  = module.security.log_analytics_workspace_id
   appgw_identity_id           = module.identity.appgw_identity_id
   appgw_identity_principal_id = module.identity.appgw_identity_principal_id
+  firewall_private_ip         = module.hub.firewall_private_ip
+  ssh_allowed_ips             = var.ssh_allowed_ips
 }
 module "compute" {
   source                     = "./modules/Compute"
   rgname                     = azurerm_resource_group.rg.name
   loca                       = "Korea Central"
   vm_subnet_id               = module.network_central.subnet_ids["www-web"]
-  vmss_subnet_id             = module.network_central.subnet_ids["www-vmss"]
+  vmss_subnet_id             = module.network_central.subnet_ids["www-web"]
   was_subnet_id              = module.network_central.subnet_ids["www-was"]
+  mail_subnet_id             = module.network_central.subnet_ids["www-mail"]
   admin_username             = "www"
   admin_password             = var.db_password
   lb_backend_pool_id         = module.network_central.lb_backend_pool_id
@@ -77,6 +80,7 @@ module "compute" {
   domain_name                = var.domain_name
   key_vault_id               = module.security.key_vault_id
   key_vault_name             = module.security.keyvault_name
+  appgw_backend_pool_id      = module.network_central.appgw_backend_pool_id
 }
 module "database" {
   source                     = "./modules/database"
@@ -91,6 +95,7 @@ module "database" {
   storage_connection_string  = module.storage.storage_connection_string
   log_analytics_workspace_id = module.security.log_analytics_workspace_id
   storage_account_id         = module.storage.storage_account_id
+  ssh_allowed_ips            = var.ssh_allowed_ips
 }
 module "security" {
   source          = "./modules/Security"
@@ -120,6 +125,8 @@ module "security" {
   sentinel_service_principal_id = var.sentinel_service_principal_id
   subscription_id = var.subscription_id
   tenant_id       = data.azurerm_client_config.current.tenant_id
+  bastion_subnet_prefix = module.hub.bastion_subnet_prefix
+  was_subnet_prefix     = module.network_central.subnet_prefixes["www-was"]
 }
 
 module "storage" {
@@ -153,7 +160,7 @@ module "container_registry" {
   source            = "./modules/ContainerRegistry"
   rgname            = azurerm_resource_group.rg.name
   loca              = "Korea Central"
-  subnet_id         = module.network_central.subnet_ids["www-web"]
+  subnet_id         = module.network_central.subnet_ids["www-acr"]
   allowed_ip_ranges = var.ssh_allowed_ips
 }
 
@@ -180,10 +187,11 @@ module "dns" {
 }
 
 module "governance" {
-  source = "./modules/Governance"
-  rgname = azurerm_resource_group.rg.name
-  rgid   = azurerm_resource_group.rg.id
-  db_id  = module.database.mysql_server_id
+  source   = "./modules/Governance"
+  rgname   = azurerm_resource_group.rg.name
+  rgid     = azurerm_resource_group.rg.id
+  db_id    = module.database.mysql_server_id
+  location = "Korea Central"
 }
 
 module "api_management" {
@@ -191,6 +199,6 @@ module "api_management" {
   rgname          = azurerm_resource_group.rg.name
   loca            = "Korea Central"
   subnet_id       = module.network_central.subnet_ids["www-web"]
-  lb_private_ip   = module.network_central.was_lb_private_ip
+  appgw_public_ip = module.network_central.appgw_public_ip
   publisher_email = var.admin_emails[0]
 }
