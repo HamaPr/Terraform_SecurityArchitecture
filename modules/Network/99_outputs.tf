@@ -7,11 +7,18 @@ output "vnet_id" {
 output "subnet_ids" {
   value = { for k, v in azurerm_subnet.subnets : k => v.id }
 }
+output "subnet_prefixes" {
+  value = { for k, v in azurerm_subnet.subnets : k => v.address_prefixes[0] }
+}
 output "lb_backend_pool_id" {
   value = azurerm_lb_backend_address_pool.bpepool.id
 }
 output "lb_probe_id" {
   value = azurerm_lb_probe.vmss_probe.id
+}
+
+output "appgw_backend_pool_id" {
+  value = var.enable_appgw ? tolist(azurerm_application_gateway.appgw[0].backend_address_pool)[0].id : null
 }
 output "lb_public_ip" {
   value = azurerm_public_ip.lb_pip.ip_address

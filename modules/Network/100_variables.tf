@@ -88,3 +88,16 @@ variable "mysql_private_endpoint_ip" {
   type        = string
   default     = ""
 }
+
+variable "firewall_private_ip" {
+  description = "Private IP address of the Hub Firewall for UDR"
+  type        = string
+}
+
+variable "ssh_allowed_ips" {
+  description = "List of allowed IPs for SSH access"
+  type        = list(string)
+  default     = []
+}
+
+
